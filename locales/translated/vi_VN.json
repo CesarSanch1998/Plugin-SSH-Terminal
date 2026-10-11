@@ -66,7 +66,7 @@
     "tmuxTimeJustNow": "vừa xong",
     "tmuxTimeMinutes": "{{count}}p trước",
     "tmuxUnavailable": "tmux không được cài đặt trên máy chủ từ xa, đang chuyển sang shell tiêu chuẩn",
-    "tmuxWindowCount": "{{count}} cửa sổ",
+    "tmuxWindowCount_other": "{{count}} cửa sổ",
     "tmuxWindows": "Cửa sổ",
     "unknownError": "Đã xảy ra lỗi không xác định",
     "websocketAbnormalClose": "Kết nối bị đóng bất ngờ. Điều này có thể do vấn đề cấu hình reverse proxy hoặc SSL. Vui lòng kiểm tra nhật ký máy chủ.",

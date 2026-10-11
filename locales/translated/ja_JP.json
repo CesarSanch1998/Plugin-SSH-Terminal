@@ -66,7 +66,7 @@
     "tmuxTimeJustNow": "たった今",
     "tmuxTimeMinutes": "{{count}}分前",
     "tmuxUnavailable": "リモートホストにtmuxがインストールされていないため、標準シェルにフォールバックします",
-    "tmuxWindowCount": "{{count}}ウィンドウ",
+    "tmuxWindowCount_other": "{{count}} ウィンドウ",
     "tmuxWindows": "ウィンドウ",
     "unknownError": "不明なエラーが発生しました",
     "websocketAbnormalClose": "接続が予期せず切断されました。リバースプロキシまたはSSL設定の問題が原因である可能性があります。サーバーログを確認してください。",

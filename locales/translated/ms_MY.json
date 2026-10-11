@@ -66,7 +66,7 @@
     "tmuxTimeJustNow": "baru sahaja",
     "tmuxTimeMinutes": "{{count}}m lalu",
     "tmuxUnavailable": "tmux tidak dipasang pada hos jauh, kembali ke shell standard",
-    "tmuxWindowCount": "{{count}} tetingkap",
+    "tmuxWindowCount_other": "{{count}} tetingkap",
     "tmuxWindows": "Tetingkap",
     "unknownError": "Ralat tidak diketahui berlaku",
     "websocketAbnormalClose": "Sambungan ditutup secara tidak dijangka. Ini mungkin disebabkan oleh isu konfigurasi pelayan songsang atau SSL. Sila semak log pelayan.",

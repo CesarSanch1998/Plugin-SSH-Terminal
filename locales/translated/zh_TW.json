@@ -66,7 +66,7 @@
     "tmuxTimeJustNow": "剛剛",
     "tmuxTimeMinutes": "{{count}} 分鐘前",
     "tmuxUnavailable": "遠端主機未安裝 tmux，已回退至標準 shell",
-    "tmuxWindowCount": "{{count}} 個視窗",
+    "tmuxWindowCount_other": "{{count}} 個視窗",
     "tmuxWindows": "視窗",
     "unknownError": "發生未知錯誤",
     "websocketAbnormalClose": "連線意外中斷。這可能是由於反向代理或 SSL 設定問題所致。請檢查伺服器日誌。",

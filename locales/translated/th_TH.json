@@ -66,7 +66,7 @@
     "tmuxTimeJustNow": "เมื่อสักครู่",
     "tmuxTimeMinutes": "{{count}} นาทีที่แล้ว",
     "tmuxUnavailable": "tmux ไม่ได้ติดตั้งบนโฮสต์ระยะไกล กำลังใช้ shell มาตรฐานแทน",
-    "tmuxWindowCount": "{{count}} หน้าต่าง",
+    "tmuxWindowCount_other": "{{count}} หน้าต่าง",
     "tmuxWindows": "หน้าต่าง",
     "unknownError": "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
     "websocketAbnormalClose": "การเชื่อมต่อถูกปิดอย่างกะทันหัน อาจเกิดจากปัญหาการตั้งค่า reverse proxy หรือ SSL โปรดตรวจสอบบันทึกของเซิร์ฟเวอร์",

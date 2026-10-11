@@ -66,7 +66,7 @@
     "tmuxTimeJustNow": "방금",
     "tmuxTimeMinutes": "{{count}}분 전",
     "tmuxUnavailable": "원격 호스트에 tmux가 설치되지 않아 표준 셸로 전환합니다",
-    "tmuxWindowCount": "{{count}}개 창",
+    "tmuxWindowCount_other": "{{count}}개 창",
     "tmuxWindows": "창",
     "unknownError": "알 수 없는 오류가 발생했습니다",
     "websocketAbnormalClose": "연결이 예기치 않게 종료되었습니다. 리버스 프록시 또는 SSL 설정 문제일 수 있습니다. 서버 로그를 확인하세요.",
