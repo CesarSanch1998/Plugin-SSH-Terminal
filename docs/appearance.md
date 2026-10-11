@@ -7,11 +7,11 @@ How the terminal looks and feels is set per host, in the host's Terminal section
 
 ## Theme
 
-Pick a built-in theme, or make your own from **Saved themes** and pick each color. A background image can sit behind the text, with its own opacity.
+Pick a built-in theme, or make your own from Saved themes and pick each color. A background image can sit behind the text, with its own opacity.
 
 ## Font
 
-Termix ships a few monospace fonts, like Caskaydia Cove Nerd Font Mono, JetBrains Mono and Fira Code. To use another, pick **Custom** and type its exact name, like `MesloLGS NF`.
+Termix ships a few monospace fonts, like Caskaydia Cove Nerd Font Mono, JetBrains Mono and Fira Code. To use another, pick Custom and type its exact name, like `MesloLGS NF`.
 
 A custom font has to be installed on the computer you use Termix from, not the server. If the name doesn't match, the terminal falls back to a plain monospace font. This is how you get a Nerd Font for prompts like Powerlevel10k.
 
@@ -23,7 +23,7 @@ Cursor style (block, underline or bar), blinking, and how many lines of scrollba
 
 ## Syntax highlighting
 
-Colors IPs, paths, errors, URLs and more in the output. Pick which kinds under **Highlight Categories**, or turn it off.
+Colors IPs, paths, errors, URLs and more in the output. Pick which kinds under Highlight Categories, or turn it off.
 
 ## Local echo
 
@@ -39,10 +39,10 @@ Only plain printable keys are guessed. Password prompts and control keys never a
 
 ## Input
 
-- **Right click selects word**, **Zoom with Ctrl or Cmd and scroll**.
+- **Right click selects word**, Zoom with Ctrl or Cmd and scroll.
 - **Option is Meta** on a Mac.
 - **Fast scroll key** and speed.
 - **Backspace** mode, for old devices that want Ctrl+H.
 - **Link click**: open links straight away, or ask first.
-- **Offer to fill password prompts** and **Fill sudo prompts** with the host's saved passwords.
+- **Offer to fill password prompts** and Fill sudo prompts with the host's saved passwords.
 - **Use the SSH title** for the tab name.

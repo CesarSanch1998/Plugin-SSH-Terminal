@@ -9,7 +9,7 @@ Use one for anything with prompts in the middle. Logging into a device that asks
 
 ## Creating a macro
 
-Open the **Macros** panel from the sidebar and make a new one. Give it a name, then add steps. They run in order, top to bottom.
+Open the Macros panel from the sidebar and make a new one. Give it a name, then add steps. They run in order, top to bottom.
 
 ## Step types
 
