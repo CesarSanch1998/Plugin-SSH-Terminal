@@ -73,9 +73,7 @@
       "service": "sessions.live",
       "version": "1.0.0",
       "permission": "ssh-terminal.sessions",
-      "names": [
-        "ssh"
-      ]
+      "names": ["ssh"]
     },
     {
       "service": "terminal.history",
@@ -106,19 +104,13 @@
         "id": "terminal",
         "titleKey": "nav.terminal",
         "icon": "SquareTerminal",
-        "openFrom": [
-          "host-context-menu",
-          "palette"
-        ]
+        "openFrom": ["host-context-menu", "palette"]
       },
       {
         "id": "local-terminal",
         "titleKey": "nav.localTerminal",
         "icon": "Laptop",
-        "openFrom": [
-          "rail",
-          "palette"
-        ]
+        "openFrom": ["rail", "palette"]
       }
     ],
     "panels": [
@@ -141,27 +133,19 @@
     "actionSlots": [
       {
         "id": "terminal.toolbar",
-        "accepts": [
-          "button"
-        ]
+        "accepts": ["button"]
       },
       {
         "id": "terminal.toolbarStatus",
-        "accepts": [
-          "component"
-        ]
+        "accepts": ["component"]
       },
       {
         "id": "terminal.sidePanel",
-        "accepts": [
-          "component"
-        ]
+        "accepts": ["component"]
       },
       {
         "id": "terminal.overlay",
-        "accepts": [
-          "component"
-        ]
+        "accepts": ["component"]
       }
     ],
     "permissions": [
@@ -169,19 +153,13 @@
         "name": "sessions",
         "titleKey": "permissions.sessions.title",
         "descriptionKey": "permissions.sessions.description",
-        "defaultRoles": [
-          "admin",
-          "user"
-        ]
+        "defaultRoles": ["admin", "user"]
       },
       {
         "name": "history",
         "titleKey": "permissions.history.title",
         "descriptionKey": "permissions.history.description",
-        "defaultRoles": [
-          "admin",
-          "user"
-        ]
+        "defaultRoles": ["admin", "user"]
       }
     ],
     "settings": {
@@ -725,16 +703,8 @@
         }
       }
     ],
-    "uses": [
-      "files.openEditor",
-      "files.openHost",
-      "snippets.startupCommand"
-    ]
+    "uses": ["files.openEditor", "files.openHost", "snippets.startupCommand"]
   },
   "locales": "locales",
-  "platforms": [
-    "linux",
-    "win32",
-    "darwin"
-  ]
+  "platforms": ["linux", "win32", "darwin"]
 }
