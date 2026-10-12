@@ -12,10 +12,10 @@ Turn Enable Terminal off for a host that should never get a terminal.
 
 ## Sessions that survive
 
-- **Disconnects.** If your browser drops, the session stays alive on the server for 30 minutes. Reopen the tab and you pick up where you left off. Admins change the time or turn it off in Settings, SSH Terminal.
-- **Reconnect automatically.** Turn it on for a host and Termix reconnects on its own after a network blip or sleep, keeping the scrollback.
-- **Auto tmux.** Turn it on for a host and every connection attaches to a tmux session, or makes one. Use it for sessions that must outlive the 30 minutes.
-- **Mosh.** Turn on Auto mosh to prefer Mosh over SSH when the host has it.
+- Disconnects: If your browser drops, the session stays alive on the server for 30 minutes. Reopen the tab and you pick up where you left off. Admins change the time or turn it off in Settings, SSH Terminal.
+- Reconnect automatically: Turn it on for a host and Termix reconnects on its own after a network blip or sleep, keeping the scrollback.
+- Auto tmux: Turn it on for a host and every connection attaches to a tmux session, or makes one. Use it for sessions that must outlive the 30 minutes.
+- Mosh: Turn on Auto mosh to prefer Mosh over SSH when the host has it.
 
 ## The toolbar
 

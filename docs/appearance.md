@@ -39,10 +39,10 @@ Only plain printable keys are guessed. Password prompts and control keys never a
 
 ## Input
 
-- **Right click selects word**, Zoom with Ctrl or Cmd and scroll.
-- **Option is Meta** on a Mac.
-- **Fast scroll key** and speed.
-- **Backspace** mode, for old devices that want Ctrl+H.
-- **Link click**: open links straight away, or ask first.
-- **Offer to fill password prompts** and Fill sudo prompts with the host's saved passwords.
-- **Use the SSH title** for the tab name.
+- Right click selects word, Zoom with Ctrl or Cmd and scroll.
+- Option is Meta on a Mac.
+- Fast scroll key and speed.
+- Backspace mode, for old devices that want Ctrl+H.
+- Link click: open links straight away, or ask first.
+- Offer to fill password prompts and Fill sudo prompts with the host's saved passwords.
+- Use the SSH title for the tab name.
