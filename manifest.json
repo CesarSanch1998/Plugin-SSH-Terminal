@@ -357,23 +357,6 @@
             "default": 443
           },
           {
-            "key": "cloudflareTunnelMode",
-            "type": "select",
-            "labelKey": "settings.host.cloudflareTunnelMode.label",
-            "hidden": true,
-            "default": "websocket",
-            "options": [
-              {
-                "value": "websocket",
-                "labelKey": "settings.host.cloudflareTunnelMode.websocket"
-              },
-              {
-                "value": "cloudflared",
-                "labelKey": "settings.host.cloudflareTunnelMode.cloudflared"
-              }
-            ]
-          },
-          {
             "key": "cloudflareTunnelClientId",
             "type": "string",
             "labelKey": "settings.host.cloudflareTunnelClientId.label",

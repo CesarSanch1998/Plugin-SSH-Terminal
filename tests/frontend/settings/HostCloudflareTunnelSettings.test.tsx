@@ -56,7 +56,6 @@ describe("HostCloudflareTunnelSettings", () => {
     });
 
     expect(screen.queryByText("terminal.cloudflareTunnelHostname")).toBeNull();
-    expect(screen.queryByText("terminal.cloudflareTunnelMode")).toBeNull();
     expect(screen.getByText("terminal.cloudflareTunnelPort")).toBeTruthy();
     expect(screen.getByText("terminal.cloudflareTunnelClientId")).toBeTruthy();
     expect(

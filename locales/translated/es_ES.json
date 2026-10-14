@@ -33,10 +33,6 @@
     "cloudflareTunnelHostnameDesc": "Dominio público enrutado a tu servicio SSH en Cloudflare Tunnel (dejar vacío para usar la dirección del host).",
     "cloudflareTunnelPort": "Puerto del túnel",
     "cloudflareTunnelPortDesc": "Puerto HTTPS/WSS de Cloudflare (por defecto 443).",
-    "cloudflareTunnelMode": "Modo de transporte",
-    "cloudflareTunnelModeDesc": "WebSocket nativo no requiere dependencias externas. La CLI cloudflared usa el binario local.",
-    "cloudflareModeWebsocket": "WebSocket nativo (Recomendado)",
-    "cloudflareModeCli": "Binario CLI cloudflared",
     "cloudflareTunnelClientId": "Client ID del Service Token",
     "cloudflareTunnelClientIdDesc": "Cabecera opcional CF-Access-Client-Id para políticas Zero Trust que requieran Service Tokens.",
     "cloudflareTunnelClientSecret": "Client Secret del Service Token",
@@ -240,11 +236,6 @@
       "cloudflareTunnelPort": {
         "label": "Puerto del túnel",
         "description": "Puerto HTTPS/WSS de Cloudflare"
-      },
-      "cloudflareTunnelMode": {
-        "label": "Modo de transporte",
-        "websocket": "WebSocket nativo",
-        "cloudflared": "CLI cloudflared"
       },
       "cloudflareTunnelClientId": {
         "label": "CF-Access-Client-Id",

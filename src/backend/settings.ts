@@ -47,7 +47,6 @@ export const HOST_KEYS = {
   cloudflareTunnelPort: "cloudflareTunnelPort",
   cloudflareTunnelClientId: "cloudflareTunnelClientId",
   cloudflareTunnelClientSecret: "cloudflareTunnelClientSecret",
-  cloudflareTunnelMode: "cloudflareTunnelMode",
 } as const;
 
 /** User settings a browser kept in localStorage before 2.9.0. */

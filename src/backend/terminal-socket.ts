@@ -15,6 +15,7 @@ import {
   type PluginSshPromptChannel,
   type PluginWebSocketConnection,
 } from "@termix-ssh/plugin-sdk/backend";
+import { isRedactedSecret } from "@termix-ssh/plugin-sdk/settings";
 import {
   asObject,
   asString,
@@ -1634,13 +1635,17 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
                 serverHostId,
                 HOST_KEYS.cloudflareTunnelClientId,
               )) as string) || "";
-            cfTunnelClientSecret =
-              ((await ctx.settings.getHost(
-                serverHostId,
-                HOST_KEYS.cloudflareTunnelClientSecret,
-              )) as string) || "";
-            if (cfTunnelClientSecret === "[object Object]") {
-              cfTunnelClientSecret = "";
+            const rawStoredSecret = await ctx.settings.getHost(
+              serverHostId,
+              HOST_KEYS.cloudflareTunnelClientSecret,
+            );
+            if (
+              typeof rawStoredSecret === "string" &&
+              !isRedactedSecret(rawStoredSecret)
+            ) {
+              // Backward compatibility: guard against legacy bug where "[object Object]" was stored in DB
+              cfTunnelClientSecret =
+                rawStoredSecret !== "[object Object]" ? rawStoredSecret : "";
             }
           }
         } catch {
@@ -1674,11 +1679,15 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
         if (typeof cfFromPlugin.cloudflareTunnelClientId === "string") {
           cfTunnelClientId = cfFromPlugin.cloudflareTunnelClientId;
         }
+        const rawPluginSecret = cfFromPlugin.cloudflareTunnelClientSecret;
         if (
-          typeof cfFromPlugin.cloudflareTunnelClientSecret === "string" &&
-          cfFromPlugin.cloudflareTunnelClientSecret !== "[object Object]"
+          typeof rawPluginSecret === "string" &&
+          !isRedactedSecret(rawPluginSecret)
         ) {
-          cfTunnelClientSecret = cfFromPlugin.cloudflareTunnelClientSecret;
+          // Backward compatibility: guard against legacy bug where "[object Object]" was passed as string
+          if (rawPluginSecret !== "[object Object]") {
+            cfTunnelClientSecret = rawPluginSecret;
+          }
         }
       }
 
@@ -3011,26 +3020,17 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
             port: cfEndpoint.port,
             clientId: cfTunnelClientId,
             clientSecret: cfTunnelClientSecret,
-            mode: "websocket",
             log: (level, message) => sendLog("handshake", level, message),
           });
           connectConfig.sock = cfStream;
-          transport = {
-            jumpClient: null,
-            via: "cloudflare_tunnel",
-          };
-        } else {
-          transport = await ctx.ssh.openTransport(
-            connectTarget,
-            connectConfig,
-            {
-              // Resolved above, or deliberately left to the jump host.
-              resolveDns: false,
-              log: (level, message) => sendLog("handshake", level, message),
-              prompt: jumpHostPrompt,
-            },
-          );
         }
+
+        transport = await ctx.ssh.openTransport(connectTarget, connectConfig, {
+          // Resolved above, or deliberately left to the jump host.
+          resolveDns: false,
+          log: (level, message) => sendLog("handshake", level, message),
+          prompt: jumpHostPrompt,
+        });
       } catch (error) {
         sshLogger.error("SSH transport failed", error, {
           operation: "ssh_transport",
@@ -3065,10 +3065,14 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
       }
       lastJumpClient = transport.jumpClient as SSHClientType | null;
 
+      const viaType = cloudflareTunnelEnabled
+        ? "cloudflare_tunnel"
+        : transport.via;
+
       sendLog(
         "handshake",
         "info",
-        transport.via === "cloudflare_tunnel"
+        cloudflareTunnelEnabled
           ? "Starting SSH session over Cloudflare Tunnel"
           : transport.via === "jump"
             ? "Starting SSH session through jump host" +
@@ -3087,7 +3091,7 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
         port,
         username,
         authType: resolvedCredentials.authType,
-        via: transport.via,
+        via: viaType,
       });
       sshConn.connect(connectConfig);
     }

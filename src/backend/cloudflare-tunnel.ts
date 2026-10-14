@@ -7,7 +7,6 @@ export interface CloudflareTunnelOptions {
   protocol?: "ws" | "wss";
   clientId?: string;
   clientSecret?: string;
-  mode?: "websocket" | "cloudflared";
   timeoutMs?: number;
   log?: (level: "info" | "warning" | "error", message: string) => void;
 }
@@ -68,10 +67,8 @@ export function normalizeCloudflareEndpoint(
 }
 
 /**
- * Creates a Node.js Duplex stream to an SSH server behind Cloudflare Tunnel (Zero Trust).
- *
- * Defaults to native WebSocket encapsulation (WSS) without requiring external binaries.
- * If mode is "cloudflared", uses the local `cloudflared` CLI binary if available.
+ * Creates a Node.js Duplex stream to an SSH server behind Cloudflare Tunnel (Zero Trust)
+ * using native WebSocket encapsulation (WSS) without requiring external binaries.
  */
 export async function createCloudflareTunnelStream(
   options: CloudflareTunnelOptions,
@@ -82,7 +79,6 @@ export async function createCloudflareTunnelStream(
     protocol,
     clientId,
     clientSecret,
-    mode = "websocket",
     timeoutMs = 30000,
     log,
   } = options;
@@ -90,16 +86,6 @@ export async function createCloudflareTunnelStream(
   const normalized = normalizeCloudflareEndpoint(hostname, port);
   const cleanHost = normalized.hostname;
   const cleanPort = port !== 443 ? port : normalized.port;
-
-  if (mode === "cloudflared") {
-    return createCloudflaredCliStream({
-      hostname: cleanHost,
-      clientId,
-      clientSecret,
-      timeoutMs,
-      log,
-    });
-  }
 
   return createWebSocketTunnelStream({
     hostname: cleanHost,
@@ -248,110 +234,6 @@ function createWebSocketTunnelStream(options: {
       });
 
       resolve(duplexStream);
-    });
-  });
-}
-
-async function createCloudflaredCliStream(options: {
-  hostname: string;
-  clientId?: string;
-  clientSecret?: string;
-  timeoutMs: number;
-  log?: (level: "info" | "warning" | "error", message: string) => void;
-}): Promise<Duplex> {
-  const { hostname, clientId, clientSecret, timeoutMs, log } = options;
-  const { spawn } = await import("node:child_process");
-
-  log?.("info", `Spawning cloudflared access tcp for ${hostname}`);
-
-  const validClientSecret =
-    typeof clientSecret === "string" &&
-    clientSecret.trim() !== "" &&
-    clientSecret !== "[object Object]";
-
-  const args = ["access", "tcp", "--hostname", hostname];
-  if (clientId && validClientSecret) {
-    args.push("--id", clientId.trim(), "--secret", clientSecret.trim());
-  }
-
-  const proc = spawn("cloudflared", args, {
-    stdio: ["pipe", "pipe", "pipe"],
-  });
-
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const timer = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        proc.kill("SIGTERM");
-        reject(new Error(`cloudflared process timed out after ${timeoutMs}ms`));
-      }
-    }, timeoutMs);
-
-    proc.stderr.on("data", (chunk: Buffer) => {
-      const msg = chunk.toString().trim();
-      if (msg) log?.("warning", `cloudflared: ${msg}`);
-    });
-
-    // Check when stdout receives first chunk or proc is ready
-    if (!proc.stdin || !proc.stdout) {
-      settled = true;
-      clearTimeout(timer);
-      reject(new Error("cloudflared stdio streams unavailable"));
-      return;
-    }
-
-    const duplex = new Duplex({
-      read() {
-        proc.stdout?.resume();
-      },
-      write(chunk, encoding, callback) {
-        if (!proc.stdin || proc.stdin.destroyed) {
-          callback(new Error("stdin is destroyed"));
-          return;
-        }
-        proc.stdin.write(chunk, encoding, callback);
-      },
-      destroy(err, callback) {
-        proc.kill();
-        callback(err);
-      },
-    });
-
-    proc.stdout.on("data", (chunk) => {
-      if (!duplex.push(chunk)) {
-        proc.stdout?.pause();
-      }
-    });
-
-    proc.stdout.on("end", () => {
-      duplex.push(null);
-    });
-
-    proc.on("close", () => {
-      if (!duplex.destroyed) {
-        duplex.destroy();
-      }
-    });
-
-    proc.on("error", (err) => {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timer);
-        reject(
-          new Error(
-            `Failed to spawn cloudflared (${err.message}). Ensure cloudflared is installed in the Termix environment or switch to Native WebSocket mode.`,
-          ),
-        );
-      }
-    });
-
-    proc.on("spawn", () => {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timer);
-        resolve(duplex);
-      }
     });
   });
 }

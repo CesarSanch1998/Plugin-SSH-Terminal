@@ -33,10 +33,6 @@
     "cloudflareTunnelHostnameDesc": "Public domain routed to your SSH origin service in Cloudflare Tunnel (leave empty to use the host's main address).",
     "cloudflareTunnelPort": "Tunnel Port",
     "cloudflareTunnelPortDesc": "Edge HTTPS/WSS port on Cloudflare (default is 443).",
-    "cloudflareTunnelMode": "Transport Mode",
-    "cloudflareTunnelModeDesc": "Native WebSocket requires no external dependencies. cloudflared CLI uses the local binary.",
-    "cloudflareModeWebsocket": "Native WebSocket (Recommended)",
-    "cloudflareModeCli": "cloudflared CLI binary",
     "cloudflareTunnelClientId": "Service Token Client ID",
     "cloudflareTunnelClientIdDesc": "Optional CF-Access-Client-Id header. Required only if Cloudflare Access Zero Trust policy enforces Service Tokens.",
     "cloudflareTunnelClientSecret": "Service Token Client Secret",
@@ -237,11 +233,6 @@
       "cloudflareTunnelPort": {
         "label": "Tunnel Port",
         "description": "Cloudflare edge HTTPS/WSS port"
-      },
-      "cloudflareTunnelMode": {
-        "label": "Transport Mode",
-        "websocket": "Native WebSocket",
-        "cloudflared": "cloudflared CLI"
       },
       "cloudflareTunnelClientId": {
         "label": "CF-Access-Client-Id",
