@@ -63,4 +63,75 @@ describe("HostCloudflareTunnelSettings", () => {
       screen.getByText("terminal.cloudflareTunnelClientSecret"),
     ).toBeTruthy();
   });
+
+  it("renders configured secret indicator and Replace button when client secret is a redacted secret object { set: true }", () => {
+    const { updateForm } = renderComponent({
+      ip: "ssh.example.com",
+      pluginSettings: {
+        "ssh-terminal": {
+          cloudflareTunnelEnabled: true,
+          cloudflareTunnelClientSecret: { set: true },
+        },
+      },
+    });
+
+    // Should NOT show any input containing "[object Object]"
+    expect(screen.queryByDisplayValue("[object Object]")).toBeNull();
+    // Should show saved indicator
+    expect(screen.getByText(/••••••••/)).toBeTruthy();
+    const replaceBtn = screen.getByText("settings.secretReplace");
+    expect(replaceBtn).toBeTruthy();
+
+    // Click Replace
+    fireEvent.click(replaceBtn);
+    expect(updateForm).toHaveBeenCalled();
+
+    // Now input is shown, and its value is "" (NOT "[object Object]")
+    const input = screen.getByPlaceholderText(
+      "terminal.cloudflareTunnelClientSecretPlaceholderNew",
+    ) as HTMLInputElement;
+    expect(input.value).toBe("");
+
+    // Cancel button should be shown
+    const cancelBtn = screen.getByText("common.cancel");
+    expect(cancelBtn).toBeTruthy();
+    fireEvent.click(cancelBtn);
+    expect(updateForm).toHaveBeenCalled();
+  });
+
+  it("handles { set: false } without displaying [object Object]", () => {
+    renderComponent({
+      ip: "ssh.example.com",
+      pluginSettings: {
+        "ssh-terminal": {
+          cloudflareTunnelEnabled: true,
+          cloudflareTunnelClientSecret: { set: false },
+        },
+      },
+    });
+
+    expect(screen.queryByDisplayValue("[object Object]")).toBeNull();
+    const input = screen.getByPlaceholderText(
+      "terminal.cloudflareTunnelClientSecretPlaceholder",
+    ) as HTMLInputElement;
+    expect(input.value).toBe("");
+  });
+
+  it("sanitizes literal string '[object Object]' from input value", () => {
+    renderComponent({
+      ip: "ssh.example.com",
+      pluginSettings: {
+        "ssh-terminal": {
+          cloudflareTunnelEnabled: true,
+          cloudflareTunnelClientSecret: "[object Object]",
+        },
+      },
+    });
+
+    expect(screen.queryByDisplayValue("[object Object]")).toBeNull();
+    const input = screen.getByPlaceholderText(
+      "terminal.cloudflareTunnelClientSecretPlaceholder",
+    ) as HTMLInputElement;
+    expect(input.value).toBe("");
+  });
 });

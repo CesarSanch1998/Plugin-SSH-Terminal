@@ -1639,6 +1639,9 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
                 serverHostId,
                 HOST_KEYS.cloudflareTunnelClientSecret,
               )) as string) || "";
+            if (cfTunnelClientSecret === "[object Object]") {
+              cfTunnelClientSecret = "";
+            }
           }
         } catch {
           cloudflareTunnelEnabled = false;
@@ -1671,7 +1674,10 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
         if (typeof cfFromPlugin.cloudflareTunnelClientId === "string") {
           cfTunnelClientId = cfFromPlugin.cloudflareTunnelClientId;
         }
-        if (typeof cfFromPlugin.cloudflareTunnelClientSecret === "string") {
+        if (
+          typeof cfFromPlugin.cloudflareTunnelClientSecret === "string" &&
+          cfFromPlugin.cloudflareTunnelClientSecret !== "[object Object]"
+        ) {
           cfTunnelClientSecret = cfFromPlugin.cloudflareTunnelClientSecret;
         }
       }

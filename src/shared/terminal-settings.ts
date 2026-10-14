@@ -270,8 +270,20 @@ function pick(key: string, value: unknown): unknown {
     case "fontFamily":
     case "cloudflareTunnelHostname":
     case "cloudflareTunnelClientId":
-    case "cloudflareTunnelClientSecret":
       return typeof value === "string" ? value : undefined;
+    case "cloudflareTunnelClientSecret":
+      if (typeof value === "string") {
+        return value === "[object Object]" ? "" : value;
+      }
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        "set" in value &&
+        typeof (value as { set?: unknown }).set === "boolean"
+      ) {
+        return value;
+      }
+      return undefined;
     case "backgroundImage":
     case "moshCommand":
       return value === null

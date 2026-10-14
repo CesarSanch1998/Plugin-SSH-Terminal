@@ -140,7 +140,12 @@ function createWebSocketTunnelStream(options: {
       "User-Agent": "Termix-SSH-Terminal/1.0",
     };
 
-    if (clientId && clientSecret) {
+    const validClientSecret =
+      typeof clientSecret === "string" &&
+      clientSecret.trim() !== "" &&
+      clientSecret !== "[object Object]";
+
+    if (clientId && validClientSecret) {
       headers["CF-Access-Client-Id"] = clientId.trim();
       headers["CF-Access-Client-Secret"] = clientSecret.trim();
       log?.("info", "Cloudflare Access Service Token headers attached");
@@ -259,8 +264,13 @@ async function createCloudflaredCliStream(options: {
 
   log?.("info", `Spawning cloudflared access tcp for ${hostname}`);
 
+  const validClientSecret =
+    typeof clientSecret === "string" &&
+    clientSecret.trim() !== "" &&
+    clientSecret !== "[object Object]";
+
   const args = ["access", "tcp", "--hostname", hostname];
-  if (clientId && clientSecret) {
+  if (clientId && validClientSecret) {
     args.push("--id", clientId.trim(), "--secret", clientSecret.trim());
   }
 

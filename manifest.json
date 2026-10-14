@@ -337,6 +337,7 @@
             "type": "boolean",
             "labelKey": "settings.host.cloudflareTunnelEnabled.label",
             "descriptionKey": "settings.host.cloudflareTunnelEnabled.description",
+            "hidden": true,
             "default": false
           },
           {
@@ -344,6 +345,7 @@
             "type": "string",
             "labelKey": "settings.host.cloudflareTunnelHostname.label",
             "descriptionKey": "settings.host.cloudflareTunnelHostname.description",
+            "hidden": true,
             "default": ""
           },
           {
@@ -351,12 +353,14 @@
             "type": "number",
             "labelKey": "settings.host.cloudflareTunnelPort.label",
             "descriptionKey": "settings.host.cloudflareTunnelPort.description",
+            "hidden": true,
             "default": 443
           },
           {
             "key": "cloudflareTunnelMode",
             "type": "select",
             "labelKey": "settings.host.cloudflareTunnelMode.label",
+            "hidden": true,
             "default": "websocket",
             "options": [
               {
@@ -374,6 +378,7 @@
             "type": "string",
             "labelKey": "settings.host.cloudflareTunnelClientId.label",
             "descriptionKey": "settings.host.cloudflareTunnelClientId.description",
+            "hidden": true,
             "default": ""
           },
           {
@@ -381,6 +386,7 @@
             "type": "secret",
             "labelKey": "settings.host.cloudflareTunnelClientSecret.label",
             "descriptionKey": "settings.host.cloudflareTunnelClientSecret.description",
+            "hidden": true,
             "default": ""
           },
           {
