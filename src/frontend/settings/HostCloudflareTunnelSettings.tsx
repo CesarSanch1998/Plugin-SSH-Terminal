@@ -5,7 +5,6 @@ import {
   FakeSwitch,
   Input,
   SectionCard,
-  Select2,
   SettingRow,
 } from "@termix-ssh/plugin-sdk/ui";
 import {
@@ -18,13 +17,13 @@ const PLUGIN_ID = "ssh-terminal";
 type HostPluginSettings = Record<string, Record<string, unknown>>;
 
 export function HostCloudflareTunnelSettings({
-  form,
+  form: _form,
   updateForm,
 }: Pick<HostEditorSectionProps, "form" | "updateForm" | "host">) {
   const { t } = useTranslation();
   const [showSecret, setShowSecret] = useState(false);
 
-  const stored = ((form?.pluginSettings as HostPluginSettings)?.[PLUGIN_ID] ??
+  const stored = ((_form?.pluginSettings as HostPluginSettings)?.[PLUGIN_ID] ??
     {}) as Record<string, unknown>;
 
   const enabled = stored.cloudflareTunnelEnabled === true;
@@ -34,7 +33,6 @@ export function HostCloudflareTunnelSettings({
       : 443;
   const clientId = (stored.cloudflareTunnelClientId as string) || "";
   const clientSecret = (stored.cloudflareTunnelClientSecret as string) || "";
-  const mode = (stored.cloudflareTunnelMode as string) || "websocket";
 
   const write = (values: Record<string, unknown>) =>
     updateForm((current) => {
@@ -91,30 +89,6 @@ export function HostCloudflareTunnelSettings({
               placeholder="443"
               className="max-w-xs"
             />
-          </SettingRow>
-
-          <SettingRow
-            label={t("terminal.cloudflareTunnelMode", "Transport Mode")}
-            description={t(
-              "terminal.cloudflareTunnelModeDesc",
-              "Native WebSocket requires no external dependencies. cloudflared CLI uses the local binary.",
-            )}
-          >
-            <Select2
-              value={mode}
-              onChange={(e) => write({ cloudflareTunnelMode: e.target.value })}
-              className="max-w-xs"
-            >
-              <option value="websocket">
-                {t(
-                  "terminal.cloudflareModeWebsocket",
-                  "Native WebSocket (Recommended)",
-                )}
-              </option>
-              <option value="cloudflared">
-                {t("terminal.cloudflareModeCli", "cloudflared CLI binary")}
-              </option>
-            </Select2>
           </SettingRow>
 
           <SettingRow

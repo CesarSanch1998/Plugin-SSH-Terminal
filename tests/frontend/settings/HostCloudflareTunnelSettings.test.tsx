@@ -42,7 +42,7 @@ describe("HostCloudflareTunnelSettings", () => {
     expect(pluginSettings?.cloudflareTunnelEnabled).toBe(true);
   });
 
-  it("shows port, mode, and service token fields when enabled", () => {
+  it("shows port and service token fields when enabled", () => {
     renderComponent({
       ip: "ssh.example.com",
       pluginSettings: {
@@ -56,8 +56,8 @@ describe("HostCloudflareTunnelSettings", () => {
     });
 
     expect(screen.queryByText("terminal.cloudflareTunnelHostname")).toBeNull();
+    expect(screen.queryByText("terminal.cloudflareTunnelMode")).toBeNull();
     expect(screen.getByText("terminal.cloudflareTunnelPort")).toBeTruthy();
-    expect(screen.getByText("terminal.cloudflareTunnelMode")).toBeTruthy();
     expect(screen.getByText("terminal.cloudflareTunnelClientId")).toBeTruthy();
     expect(
       screen.getByText("terminal.cloudflareTunnelClientSecret"),

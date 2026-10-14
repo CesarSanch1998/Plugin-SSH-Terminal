@@ -1609,7 +1609,6 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
       let cfTunnelPort = 443;
       let cfTunnelClientId = "";
       let cfTunnelClientSecret = "";
-      let cfTunnelMode: "websocket" | "cloudflared" = "websocket";
 
       if (serverHostId != null) {
         try {
@@ -1640,12 +1639,6 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
                 serverHostId,
                 HOST_KEYS.cloudflareTunnelClientSecret,
               )) as string) || "";
-            const modeVal = await ctx.settings.getHost(
-              serverHostId,
-              HOST_KEYS.cloudflareTunnelMode,
-            );
-            cfTunnelMode =
-              modeVal === "cloudflared" ? "cloudflared" : "websocket";
           }
         } catch {
           cloudflareTunnelEnabled = false;
@@ -1680,12 +1673,6 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
         }
         if (typeof cfFromPlugin.cloudflareTunnelClientSecret === "string") {
           cfTunnelClientSecret = cfFromPlugin.cloudflareTunnelClientSecret;
-        }
-        if (
-          cfFromPlugin.cloudflareTunnelMode === "cloudflared" ||
-          cfFromPlugin.cloudflareTunnelMode === "websocket"
-        ) {
-          cfTunnelMode = cfFromPlugin.cloudflareTunnelMode;
         }
       }
 
@@ -3018,7 +3005,7 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
             port: cfEndpoint.port,
             clientId: cfTunnelClientId,
             clientSecret: cfTunnelClientSecret,
-            mode: cfTunnelMode,
+            mode: "websocket",
             log: (level, message) => sendLog("handshake", level, message),
           });
           connectConfig.sock = cfStream;
