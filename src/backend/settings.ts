@@ -42,6 +42,12 @@ export const HOST_KEYS = {
   terminalToolbarFade: "terminalToolbarFade",
   enableCommandHistory: "enableCommandHistory",
   autoTmux: "autoTmux",
+  cloudflareTunnelEnabled: "cloudflareTunnelEnabled",
+  cloudflareTunnelHostname: "cloudflareTunnelHostname",
+  cloudflareTunnelPort: "cloudflareTunnelPort",
+  cloudflareTunnelClientId: "cloudflareTunnelClientId",
+  cloudflareTunnelClientSecret: "cloudflareTunnelClientSecret",
+  cloudflareTunnelMode: "cloudflareTunnelMode",
 } as const;
 
 /** User settings a browser kept in localStorage before 2.9.0. */

@@ -35,6 +35,7 @@ import {
 } from "./helpers.js";
 import { SSHAuthManager } from "./keyboard-prompt.js";
 import { HOST_KEYS } from "./settings.js";
+import { createCloudflareTunnelStream } from "./cloudflare-tunnel.js";
 import {
   isMessageAllowedForParticipant,
   type TerminalSessionManager,
@@ -1600,6 +1601,91 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
         }
       }
 
+      let cloudflareTunnelEnabled = false;
+      let cfTunnelHostname = "";
+      let cfTunnelPort = 443;
+      let cfTunnelClientId = "";
+      let cfTunnelClientSecret = "";
+      let cfTunnelMode: "websocket" | "cloudflared" = "websocket";
+
+      if (serverHostId != null) {
+        try {
+          cloudflareTunnelEnabled =
+            (await ctx.settings.getHost(
+              serverHostId,
+              HOST_KEYS.cloudflareTunnelEnabled,
+            )) === true;
+          if (cloudflareTunnelEnabled) {
+            cfTunnelHostname =
+              ((await ctx.settings.getHost(
+                serverHostId,
+                HOST_KEYS.cloudflareTunnelHostname,
+              )) as string) || "";
+            const portVal = await ctx.settings.getHost(
+              serverHostId,
+              HOST_KEYS.cloudflareTunnelPort,
+            );
+            cfTunnelPort =
+              typeof portVal === "number" && portVal > 0 ? portVal : 443;
+            cfTunnelClientId =
+              ((await ctx.settings.getHost(
+                serverHostId,
+                HOST_KEYS.cloudflareTunnelClientId,
+              )) as string) || "";
+            cfTunnelClientSecret =
+              ((await ctx.settings.getHost(
+                serverHostId,
+                HOST_KEYS.cloudflareTunnelClientSecret,
+              )) as string) || "";
+            const modeVal = await ctx.settings.getHost(
+              serverHostId,
+              HOST_KEYS.cloudflareTunnelMode,
+            );
+            cfTunnelMode =
+              modeVal === "cloudflared" ? "cloudflared" : "websocket";
+          }
+        } catch {
+          cloudflareTunnelEnabled = false;
+        }
+      }
+
+      const clientPluginSettings = (hostConfig as Record<string, unknown>)
+        .pluginSettings as Record<string, Record<string, unknown>> | undefined;
+      const hostDataPluginSettings = (
+        resolvedHostData as Record<string, unknown> | null
+      )?.pluginSettings as Record<string, Record<string, unknown>> | undefined;
+      const cfFromPlugin =
+        clientPluginSettings?.["ssh-terminal"] ??
+        hostDataPluginSettings?.["ssh-terminal"];
+
+      if (cfFromPlugin?.cloudflareTunnelEnabled === true) {
+        cloudflareTunnelEnabled = true;
+        if (
+          typeof cfFromPlugin.cloudflareTunnelHostname === "string" &&
+          cfFromPlugin.cloudflareTunnelHostname
+        ) {
+          cfTunnelHostname = cfFromPlugin.cloudflareTunnelHostname;
+        }
+        if (
+          typeof cfFromPlugin.cloudflareTunnelPort === "number" &&
+          cfFromPlugin.cloudflareTunnelPort > 0
+        ) {
+          cfTunnelPort = cfFromPlugin.cloudflareTunnelPort;
+        }
+        if (typeof cfFromPlugin.cloudflareTunnelClientId === "string") {
+          cfTunnelClientId = cfFromPlugin.cloudflareTunnelClientId;
+        }
+        if (typeof cfFromPlugin.cloudflareTunnelClientSecret === "string") {
+          cfTunnelClientSecret = cfFromPlugin.cloudflareTunnelClientSecret;
+        }
+        if (
+          cfFromPlugin.cloudflareTunnelMode === "cloudflared" ||
+          cfFromPlugin.cloudflareTunnelMode === "websocket"
+        ) {
+          cfTunnelMode = cfFromPlugin.cloudflareTunnelMode;
+        }
+      }
+
       // Resolve credentials server-side when frontend doesn't provide them
       let resolvedCredentials = {
         username,
@@ -1694,6 +1780,12 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
           "info",
           `Skipping local address resolution of ${ip} (resolved by jump host)`,
         );
+      } else if (cloudflareTunnelEnabled) {
+        sendLog(
+          "dns",
+          "info",
+          `Routing connection through Cloudflare Tunnel (${cfTunnelHostname || ip})`,
+        );
       } else {
         sendLog("dns", "info", `Starting address resolution of ${ip}`);
         try {
@@ -1733,7 +1825,15 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
           return;
         }
       }
-      sendLog("tcp", "info", `Connecting to ${ip} port ${port}`);
+      if (!cloudflareTunnelEnabled) {
+        sendLog("tcp", "info", `Connecting to ${ip} port ${port}`);
+      } else {
+        sendLog(
+          "tcp",
+          "info",
+          `Connecting via Cloudflare Tunnel to ${cfTunnelHostname || ip}:${cfTunnelPort}`,
+        );
+      }
 
       // A provider can hold the handshake open pending an out-of-band step
       // (Tailscale SSH check mode delivers its re-auth URL as an auth banner,
@@ -2892,18 +2992,44 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
 
       let transport: Awaited<ReturnType<typeof ctx.ssh.openTransport>>;
       try {
-        transport = await ctx.ssh.openTransport(connectTarget, connectConfig, {
-          // Resolved above, or deliberately left to the jump host.
-          resolveDns: false,
-          log: (level, message) => sendLog("handshake", level, message),
-          prompt: jumpHostPrompt,
-        });
+        if (cloudflareTunnelEnabled) {
+          sendLog(
+            "handshake",
+            "info",
+            `Connecting to Cloudflare Zero Trust Tunnel for ${cfTunnelHostname || ip}`,
+          );
+          const cfStream = await createCloudflareTunnelStream({
+            hostname: cfTunnelHostname || ip,
+            port: cfTunnelPort || 443,
+            clientId: cfTunnelClientId,
+            clientSecret: cfTunnelClientSecret,
+            mode: cfTunnelMode,
+            log: (level, message) => sendLog("handshake", level, message),
+          });
+          connectConfig.sock = cfStream;
+          transport = {
+            jumpClient: null,
+            via: "cloudflare_tunnel",
+          };
+        } else {
+          transport = await ctx.ssh.openTransport(
+            connectTarget,
+            connectConfig,
+            {
+              // Resolved above, or deliberately left to the jump host.
+              resolveDns: false,
+              log: (level, message) => sendLog("handshake", level, message),
+              prompt: jumpHostPrompt,
+            },
+          );
+        }
       } catch (error) {
         sshLogger.error("SSH transport failed", error, {
           operation: "ssh_transport",
           hostId: id,
           ip,
           port,
+          cloudflareTunnel: cloudflareTunnelEnabled,
         });
         ws.send(
           JSON.stringify({
@@ -2934,12 +3060,14 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
       sendLog(
         "handshake",
         "info",
-        transport.via === "jump"
-          ? "Starting SSH session through jump host" +
+        transport.via === "cloudflare_tunnel"
+          ? "Starting SSH session over Cloudflare Tunnel"
+          : transport.via === "jump"
+            ? "Starting SSH session through jump host" +
               (viaProxy ? " (via proxy)" : "")
-          : transport.via === "proxy"
-            ? "Starting SSH session (via proxy)"
-            : "Starting SSH session",
+            : transport.via === "proxy"
+              ? "Starting SSH session (via proxy)"
+              : "Starting SSH session",
       );
       sendLog("auth", "info", `Authenticating as ${username}`);
       sshLogger.info("Initiating SSH connection", {
