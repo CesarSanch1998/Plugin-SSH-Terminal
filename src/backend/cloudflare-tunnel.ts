@@ -278,18 +278,6 @@ async function createCloudflaredCliStream(options: {
       }
     }, timeoutMs);
 
-    proc.on("error", (err) => {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timer);
-        reject(
-          new Error(
-            `Failed to spawn cloudflared: ${err.message}. Ensure cloudflared is installed or use native WebSocket mode.`,
-          ),
-        );
-      }
-    });
-
     proc.stderr.on("data", (chunk: Buffer) => {
       const msg = chunk.toString().trim();
       if (msg) log?.("warning", `cloudflared: ${msg}`);
@@ -336,8 +324,24 @@ async function createCloudflaredCliStream(options: {
       }
     });
 
-    settled = true;
-    clearTimeout(timer);
-    resolve(duplex);
+    proc.on("error", (err) => {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timer);
+        reject(
+          new Error(
+            `Failed to spawn cloudflared (${err.message}). Ensure cloudflared is installed in the Termix environment or switch to Native WebSocket mode.`,
+          ),
+        );
+      }
+    });
+
+    proc.on("spawn", () => {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timer);
+        resolve(duplex);
+      }
+    });
   });
 }
