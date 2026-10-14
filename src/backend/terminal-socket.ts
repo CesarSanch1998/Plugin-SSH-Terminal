@@ -1605,54 +1605,6 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
         }
       }
 
-      let cloudflareTunnelEnabled = false;
-      let cfTunnelHostname = "";
-      let cfTunnelPort = 443;
-      let cfTunnelClientId = "";
-      let cfTunnelClientSecret = "";
-
-      if (serverHostId != null) {
-        try {
-          cloudflareTunnelEnabled =
-            (await ctx.settings.getHost(
-              serverHostId,
-              HOST_KEYS.cloudflareTunnelEnabled,
-            )) === true;
-          if (cloudflareTunnelEnabled) {
-            cfTunnelHostname =
-              ((await ctx.settings.getHost(
-                serverHostId,
-                HOST_KEYS.cloudflareTunnelHostname,
-              )) as string) || "";
-            const portVal = await ctx.settings.getHost(
-              serverHostId,
-              HOST_KEYS.cloudflareTunnelPort,
-            );
-            cfTunnelPort =
-              typeof portVal === "number" && portVal > 0 ? portVal : 443;
-            cfTunnelClientId =
-              ((await ctx.settings.getHost(
-                serverHostId,
-                HOST_KEYS.cloudflareTunnelClientId,
-              )) as string) || "";
-            const rawStoredSecret = await ctx.settings.getHost(
-              serverHostId,
-              HOST_KEYS.cloudflareTunnelClientSecret,
-            );
-            if (
-              typeof rawStoredSecret === "string" &&
-              !isRedactedSecret(rawStoredSecret)
-            ) {
-              // Backward compatibility: guard against legacy bug where "[object Object]" was stored in DB
-              cfTunnelClientSecret =
-                rawStoredSecret !== "[object Object]" ? rawStoredSecret : "";
-            }
-          }
-        } catch {
-          cloudflareTunnelEnabled = false;
-        }
-      }
-
       const clientPluginSettings = (hostConfig as Record<string, unknown>)
         .pluginSettings as Record<string, Record<string, unknown>> | undefined;
       const hostDataPluginSettings = (
@@ -1662,32 +1614,84 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
         clientPluginSettings?.["ssh-terminal"] ??
         hostDataPluginSettings?.["ssh-terminal"];
 
-      if (cfFromPlugin?.cloudflareTunnelEnabled === true) {
-        cloudflareTunnelEnabled = true;
-        if (
-          typeof cfFromPlugin.cloudflareTunnelHostname === "string" &&
-          cfFromPlugin.cloudflareTunnelHostname
-        ) {
-          cfTunnelHostname = cfFromPlugin.cloudflareTunnelHostname;
-        }
-        if (
-          typeof cfFromPlugin.cloudflareTunnelPort === "number" &&
-          cfFromPlugin.cloudflareTunnelPort > 0
-        ) {
-          cfTunnelPort = cfFromPlugin.cloudflareTunnelPort;
-        }
-        if (typeof cfFromPlugin.cloudflareTunnelClientId === "string") {
-          cfTunnelClientId = cfFromPlugin.cloudflareTunnelClientId;
-        }
-        const rawPluginSecret = cfFromPlugin.cloudflareTunnelClientSecret;
-        if (
-          typeof rawPluginSecret === "string" &&
-          !isRedactedSecret(rawPluginSecret)
-        ) {
-          // Backward compatibility: guard against legacy bug where "[object Object]" was passed as string
-          if (rawPluginSecret !== "[object Object]") {
-            cfTunnelClientSecret = rawPluginSecret;
+      let cloudflareTunnelEnabled =
+        cfFromPlugin?.cloudflareTunnelEnabled === true;
+      let cfTunnelHostname =
+        typeof cfFromPlugin?.cloudflareTunnelHostname === "string"
+          ? cfFromPlugin.cloudflareTunnelHostname
+          : "";
+      let cfTunnelPort =
+        typeof cfFromPlugin?.cloudflareTunnelPort === "number" &&
+        cfFromPlugin.cloudflareTunnelPort > 0
+          ? cfFromPlugin.cloudflareTunnelPort
+          : 443;
+      let cfTunnelClientId =
+        typeof cfFromPlugin?.cloudflareTunnelClientId === "string"
+          ? cfFromPlugin.cloudflareTunnelClientId
+          : "";
+      let cfTunnelClientSecret =
+        typeof cfFromPlugin?.cloudflareTunnelClientSecret === "string" &&
+        cfFromPlugin.cloudflareTunnelClientSecret.trim() !== "" &&
+        !isRedactedSecret(cfFromPlugin.cloudflareTunnelClientSecret) &&
+        cfFromPlugin.cloudflareTunnelClientSecret !== "[object Object]"
+          ? cfFromPlugin.cloudflareTunnelClientSecret
+          : "";
+
+      if (serverHostId != null) {
+        try {
+          if (!cloudflareTunnelEnabled) {
+            cloudflareTunnelEnabled =
+              (await ctx.settings.getHost(
+                serverHostId,
+                HOST_KEYS.cloudflareTunnelEnabled,
+              )) === true;
           }
+          if (cloudflareTunnelEnabled) {
+            if (!cfTunnelHostname) {
+              const hostVal = await ctx.settings.getHost(
+                serverHostId,
+                HOST_KEYS.cloudflareTunnelHostname,
+              );
+              if (typeof hostVal === "string" && hostVal) {
+                cfTunnelHostname = hostVal;
+              }
+            }
+            if (cfTunnelPort === 443) {
+              const portVal = await ctx.settings.getHost(
+                serverHostId,
+                HOST_KEYS.cloudflareTunnelPort,
+              );
+              if (typeof portVal === "number" && portVal > 0) {
+                cfTunnelPort = portVal;
+              }
+            }
+            if (!cfTunnelClientId) {
+              const clientIdVal = await ctx.settings.getHost(
+                serverHostId,
+                HOST_KEYS.cloudflareTunnelClientId,
+              );
+              if (typeof clientIdVal === "string" && clientIdVal) {
+                cfTunnelClientId = clientIdVal;
+              }
+            }
+            // If the secret was not provided as a plaintext string by the client
+            // (e.g. client sent { set: true } placeholder), resolve the decrypted secret from server-side storage
+            if (!cfTunnelClientSecret) {
+              const rawStoredSecret = await ctx.settings.getHost(
+                serverHostId,
+                HOST_KEYS.cloudflareTunnelClientSecret,
+              );
+              if (
+                typeof rawStoredSecret === "string" &&
+                !isRedactedSecret(rawStoredSecret) &&
+                rawStoredSecret !== "[object Object]"
+              ) {
+                cfTunnelClientSecret = rawStoredSecret;
+              }
+            }
+          }
+        } catch {
+          // ignore error reading server settings
         }
       }
 
