@@ -2,7 +2,57 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { describe, expect, it } from "vitest";
 import WebSocket, { WebSocketServer } from "ws";
-import { createCloudflareTunnelStream } from "../../src/backend/cloudflare-tunnel.js";
+import {
+  createCloudflareTunnelStream,
+  normalizeCloudflareEndpoint,
+} from "../../src/backend/cloudflare-tunnel.js";
+
+describe("normalizeCloudflareEndpoint", () => {
+  it("normalizes plain hostnames and sets default port 443", () => {
+    expect(normalizeCloudflareEndpoint("ssh.example.com")).toEqual({
+      hostname: "ssh.example.com",
+      port: 443,
+    });
+  });
+
+  it("strips schemes and trailing slashes, including typo protocols like httsp:// and http:/", () => {
+    expect(normalizeCloudflareEndpoint("httsp://ssh.example.com")).toEqual({
+      hostname: "ssh.example.com",
+      port: 443,
+    });
+    expect(normalizeCloudflareEndpoint("httsp:/ssh.example.com")).toEqual({
+      hostname: "ssh.example.com",
+      port: 443,
+    });
+    expect(normalizeCloudflareEndpoint("https://ssh.example.com/")).toEqual({
+      hostname: "ssh.example.com",
+      port: 443,
+    });
+    expect(
+      normalizeCloudflareEndpoint("wss://ssh.example.com/some/path"),
+    ).toEqual({
+      hostname: "ssh.example.com",
+      port: 443,
+    });
+    expect(normalizeCloudflareEndpoint("ssh://ssh.example.com")).toEqual({
+      hostname: "ssh.example.com",
+      port: 443,
+    });
+  });
+
+  it("extracts explicit port when present in host or URL", () => {
+    expect(
+      normalizeCloudflareEndpoint("https://ssh.example.com:8443/some/path"),
+    ).toEqual({
+      hostname: "ssh.example.com",
+      port: 8443,
+    });
+    expect(normalizeCloudflareEndpoint("ssh.example.com:2222")).toEqual({
+      hostname: "ssh.example.com",
+      port: 2222,
+    });
+  });
+});
 
 describe("createCloudflareTunnelStream", () => {
   it("connects to websocket server and exchanges bidirectional data", async () => {

@@ -35,7 +35,10 @@ import {
 } from "./helpers.js";
 import { SSHAuthManager } from "./keyboard-prompt.js";
 import { HOST_KEYS } from "./settings.js";
-import { createCloudflareTunnelStream } from "./cloudflare-tunnel.js";
+import {
+  createCloudflareTunnelStream,
+  normalizeCloudflareEndpoint,
+} from "./cloudflare-tunnel.js";
 import {
   isMessageAllowedForParticipant,
   type TerminalSessionManager,
@@ -1781,10 +1784,14 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
           `Skipping local address resolution of ${ip} (resolved by jump host)`,
         );
       } else if (cloudflareTunnelEnabled) {
+        const cfEndpoint = normalizeCloudflareEndpoint(
+          cfTunnelHostname || ip,
+          cfTunnelPort || 443,
+        );
         sendLog(
           "dns",
           "info",
-          `Routing connection through Cloudflare Tunnel (${cfTunnelHostname || ip})`,
+          `Routing connection through Cloudflare Tunnel (${cfEndpoint.hostname})`,
         );
       } else {
         sendLog("dns", "info", `Starting address resolution of ${ip}`);
@@ -1828,10 +1835,14 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
       if (!cloudflareTunnelEnabled) {
         sendLog("tcp", "info", `Connecting to ${ip} port ${port}`);
       } else {
+        const cfEndpoint = normalizeCloudflareEndpoint(
+          cfTunnelHostname || ip,
+          cfTunnelPort || 443,
+        );
         sendLog(
           "tcp",
           "info",
-          `Connecting via Cloudflare Tunnel to ${cfTunnelHostname || ip}:${cfTunnelPort}`,
+          `Connecting via Cloudflare Tunnel to ${cfEndpoint.hostname}:${cfEndpoint.port}`,
         );
       }
 
@@ -2993,14 +3004,18 @@ export function createTerminalSocket(deps: TerminalSocketDeps) {
       let transport: Awaited<ReturnType<typeof ctx.ssh.openTransport>>;
       try {
         if (cloudflareTunnelEnabled) {
+          const cfEndpoint = normalizeCloudflareEndpoint(
+            cfTunnelHostname || ip,
+            cfTunnelPort || 443,
+          );
           sendLog(
             "handshake",
             "info",
-            `Connecting to Cloudflare Zero Trust Tunnel for ${cfTunnelHostname || ip}`,
+            `Connecting to Cloudflare Zero Trust Tunnel for ${cfEndpoint.hostname}:${cfEndpoint.port}`,
           );
           const cfStream = await createCloudflareTunnelStream({
-            hostname: cfTunnelHostname || ip,
-            port: cfTunnelPort || 443,
+            hostname: cfEndpoint.hostname,
+            port: cfEndpoint.port,
             clientId: cfTunnelClientId,
             clientSecret: cfTunnelClientSecret,
             mode: cfTunnelMode,

@@ -28,7 +28,7 @@
     "cloudflareTunnelTitle": "Túnel Cloudflare (Zero Trust)",
     "cloudflareTunnelDesc": "Conecta a hosts detrás de un Cloudflare Tunnel usando transporte nativo WebSocket sin abrir el puerto 22 a internet.",
     "enableCloudflareTunnel": "Habilitar Cloudflare Tunnel",
-    "enableCloudflareTunnelDesc": "Enrutar el tráfico SSH mediante Cloudflare Zero Trust en lugar de sockets TCP directos.",
+    "enableCloudflareTunnelDesc": "Enrutar el tráfico SSH mediante Cloudflare Zero Trust (WSS) usando la dirección principal del host en lugar de sockets TCP directos.",
     "cloudflareTunnelHostname": "Nombre de host del túnel",
     "cloudflareTunnelHostnameDesc": "Dominio público enrutado a tu servicio SSH en Cloudflare Tunnel (dejar vacío para usar la dirección del host).",
     "cloudflareTunnelPort": "Puerto del túnel",

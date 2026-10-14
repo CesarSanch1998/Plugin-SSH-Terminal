@@ -28,7 +28,6 @@ export function HostCloudflareTunnelSettings({
     {}) as Record<string, unknown>;
 
   const enabled = stored.cloudflareTunnelEnabled === true;
-  const hostname = (stored.cloudflareTunnelHostname as string) || "";
   const port =
     typeof stored.cloudflareTunnelPort === "number"
       ? stored.cloudflareTunnelPort
@@ -61,7 +60,7 @@ export function HostCloudflareTunnelSettings({
         label={t("terminal.enableCloudflareTunnel", "Enable Cloudflare Tunnel")}
         description={t(
           "terminal.enableCloudflareTunnelDesc",
-          "Route SSH traffic through Cloudflare Zero Trust instead of direct TCP sockets.",
+          "Route SSH traffic through Cloudflare Zero Trust (WSS) using the host's main address instead of direct TCP sockets.",
         )}
       >
         <FakeSwitch
@@ -72,23 +71,6 @@ export function HostCloudflareTunnelSettings({
 
       {enabled && (
         <>
-          <SettingRow
-            label={t("terminal.cloudflareTunnelHostname", "Tunnel Hostname")}
-            description={t(
-              "terminal.cloudflareTunnelHostnameDesc",
-              "Public domain routed to your SSH origin service in Cloudflare Tunnel (leave empty to use the host's main address).",
-            )}
-          >
-            <Input
-              value={hostname}
-              onChange={(e) =>
-                write({ cloudflareTunnelHostname: e.target.value })
-              }
-              placeholder={String(form.ip || "e.g. ssh.example.com")}
-              className="max-w-xs"
-            />
-          </SettingRow>
-
           <SettingRow
             label={t("terminal.cloudflareTunnelPort", "Tunnel Port")}
             description={t(

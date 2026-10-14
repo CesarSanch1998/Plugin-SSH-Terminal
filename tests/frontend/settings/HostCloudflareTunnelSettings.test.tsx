@@ -27,7 +27,7 @@ describe("HostCloudflareTunnelSettings", () => {
     expect(screen.getByText("terminal.cloudflareTunnelTitle")).toBeTruthy();
     expect(screen.getByText("terminal.enableCloudflareTunnel")).toBeTruthy();
     // Sub-settings should not be shown when disabled
-    expect(screen.queryByText("terminal.cloudflareTunnelHostname")).toBeNull();
+    expect(screen.queryByText("terminal.cloudflareTunnelPort")).toBeNull();
   });
 
   it("toggles cloudflareTunnelEnabled when switch is clicked", () => {
@@ -42,13 +42,12 @@ describe("HostCloudflareTunnelSettings", () => {
     expect(pluginSettings?.cloudflareTunnelEnabled).toBe(true);
   });
 
-  it("shows hostname, port, and service token fields when enabled", () => {
+  it("shows port, mode, and service token fields when enabled", () => {
     renderComponent({
       ip: "ssh.example.com",
       pluginSettings: {
         "ssh-terminal": {
           cloudflareTunnelEnabled: true,
-          cloudflareTunnelHostname: "ssh.example.com",
           cloudflareTunnelPort: 443,
           cloudflareTunnelClientId: "client-id-123",
           cloudflareTunnelClientSecret: "secret-456",
@@ -56,7 +55,7 @@ describe("HostCloudflareTunnelSettings", () => {
       },
     });
 
-    expect(screen.getByText("terminal.cloudflareTunnelHostname")).toBeTruthy();
+    expect(screen.queryByText("terminal.cloudflareTunnelHostname")).toBeNull();
     expect(screen.getByText("terminal.cloudflareTunnelPort")).toBeTruthy();
     expect(screen.getByText("terminal.cloudflareTunnelMode")).toBeTruthy();
     expect(screen.getByText("terminal.cloudflareTunnelClientId")).toBeTruthy();

@@ -12,6 +12,61 @@ export interface CloudflareTunnelOptions {
   log?: (level: "info" | "warning" | "error", message: string) => void;
 }
 
+export interface NormalizedTunnelEndpoint {
+  hostname: string;
+  port: number;
+}
+
+/**
+ * Normalizes host/URL inputs, stripping any protocol schemes (even with typos like httsp:// or http:/),
+ * paths, queries, and extracting explicit ports when present.
+ */
+export function normalizeCloudflareEndpoint(
+  rawInput: string,
+  defaultPort: number = 443,
+): NormalizedTunnelEndpoint {
+  let input = String(rawInput || "").trim();
+  if (!input) {
+    return { hostname: "", port: defaultPort };
+  }
+
+  // 1. Strip any URI scheme/protocol prefix, e.g. "https://", "httsp://", "http://", "wss://", "ssh://", etc.
+  input = input.replace(/^[a-zA-Z0-9+.-]+:\/+/i, "");
+
+  // 2. Strip any path, query string or hash (/foo, ?bar, #baz)
+  input = input.split("/")[0].split("?")[0].split("#")[0].trim();
+
+  // 3. Extract port from IPv6 [::1]:443 or host:port
+  let hostname = input;
+  let port = defaultPort;
+
+  if (hostname.startsWith("[") && hostname.includes("]")) {
+    const close = hostname.indexOf("]");
+    const ipv6 = hostname.slice(1, close);
+    const rest = hostname.slice(close + 1);
+    hostname = ipv6;
+    if (rest.startsWith(":")) {
+      const p = parseInt(rest.slice(1), 10);
+      if (!Number.isNaN(p) && p > 0 && p <= 65535) {
+        port = p;
+      }
+    }
+  } else if (hostname.includes(":")) {
+    const parts = hostname.split(":");
+    if (parts.length === 2) {
+      const p = parseInt(parts[1], 10);
+      if (!Number.isNaN(p) && p > 0 && p <= 65535) {
+        hostname = parts[0];
+        port = p;
+      }
+    }
+  }
+
+  hostname = hostname.replace(/[:/]+$/, "").trim();
+
+  return { hostname, port };
+}
+
 /**
  * Creates a Node.js Duplex stream to an SSH server behind Cloudflare Tunnel (Zero Trust).
  *
@@ -32,10 +87,9 @@ export async function createCloudflareTunnelStream(
     log,
   } = options;
 
-  const cleanHost = hostname
-    .replace(/^https?:\/\/|^wss?:\/\//i, "")
-    .replace(/\/.*$/, "")
-    .trim();
+  const normalized = normalizeCloudflareEndpoint(hostname, port);
+  const cleanHost = normalized.hostname;
+  const cleanPort = port !== 443 ? port : normalized.port;
 
   if (mode === "cloudflared") {
     return createCloudflaredCliStream({
@@ -49,7 +103,7 @@ export async function createCloudflareTunnelStream(
 
   return createWebSocketTunnelStream({
     hostname: cleanHost,
-    port,
+    port: cleanPort,
     protocol,
     clientId,
     clientSecret,
